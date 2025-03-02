@@ -6,8 +6,15 @@
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <PublishAot>true</PublishAot>
         <InvariantGlobalization>true</InvariantGlobalization>
     </PropertyGroup>
+
+    <ItemGroup>
+      <Content Include="bin\Debug\net9.0\DebugServer\asd\favicon.ico" />
+      <Content Include="bin\Debug\net9.0\DebugServer\asd\index.html" />
+      <Content Include="bin\Debug\net9.0\DebugServer\asd\script.js" />
+      <Content Include="bin\Debug\net9.0\DebugServer\asd\server.csref" />
+      <Content Include="bin\Debug\net9.0\DebugServer\asd\styles.css" />
+    </ItemGroup>
 
 </Project>

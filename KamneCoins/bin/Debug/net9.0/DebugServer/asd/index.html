@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проверка функций сервера</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Проверка функций сервера</h1>
+        </header>
+        <main>
+            <section class="card">
+                <h2>GET-запрос</h2>
+                <input type="text" id="getParam" placeholder="Введите параметр">
+                <button onclick="sendGetRequest()">Отправить GET</button>
+                <p id="getResponse"></p>
+            </section>
+            <section class="card">
+                <h2>POST-запрос на .csref</h2>
+                <textarea id="postData" placeholder="Введите данные"></textarea>
+                <button onclick="sendPostRequest()">Отправить POST</button>
+                <p id="postResponse"></p>
+            </section>
+        </main>
+        <footer>
+            <p>&copy; 2025 Тестовый сервер</p>
+        </footer>
+    </div>
+</body>
+</html>
