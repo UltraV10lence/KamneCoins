@@ -10,11 +10,18 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Content Include="bin\Debug\net9.0\DebugServer\api\register.csref" />
       <Content Include="bin\Debug\net9.0\DebugServer\asd\favicon.ico" />
       <Content Include="bin\Debug\net9.0\DebugServer\asd\index.html" />
       <Content Include="bin\Debug\net9.0\DebugServer\asd\script.js" />
       <Content Include="bin\Debug\net9.0\DebugServer\asd\server.csref" />
-      <Content Include="bin\Debug\net9.0\DebugServer\asd\styles.css" />
+      <Content Include="bin\Debug\net9.0\DebugServer\asd\style.css" />
+      <Content Include="bin\Debug\net9.0\DebugServer\asd\text file test.txt" />
+      <Content Include="bin\Debug\net9.0\DebugServer\favicon.ico" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
 
 </Project>

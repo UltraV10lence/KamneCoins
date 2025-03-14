@@ -107,13 +107,7 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
-[Bb]in/*
-!bin/**/
-bin/[Dd]ebug/*
-!bin/[Dd]ebug/**/
-bin/[Dd]ebug/net9.0/*
-!bin/[Dd]ebug/net9.0/**/
-!bin/[Dd]ebug/net9.0/DebugServer/**/
+bin/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

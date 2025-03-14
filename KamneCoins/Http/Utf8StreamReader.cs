@@ -14,7 +14,6 @@ public class Utf8StreamReader : TextReader {
         var temp = peekedByte;
         peekedByte = -1;
         return temp;
-
     }
 
     public override int Peek() {

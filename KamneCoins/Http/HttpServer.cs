@@ -1,13 +1,12 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using System.Web;
 
 namespace KamneCoins.Http;
 
 public static class HttpServer {
     public delegate void RequestConsumer(HttpRequest request, HttpResponse response);
     
-    public static async Task StartServer(RequestConsumer consumer) {
+    public static async Task StartServer(RequestConsumer consumer, bool alwaysCloseConnection) {
         var listener = new TcpListener(IPAddress.Any, 80);
         listener.Start();
 
@@ -16,14 +15,15 @@ public static class HttpServer {
 
             _ = Task.Factory.StartNew(() => {
                 try {
-                    ConsumeConnection(client, consumer);
+                    ConsumeConnection(client, consumer, alwaysCloseConnection);
+                } catch { } finally {
                     client.Close();
-                } catch { }
+                }
             });
         }
     }
 
-    private static void ConsumeConnection(TcpClient client, RequestConsumer consumer) {
+    private static void ConsumeConnection(TcpClient client, RequestConsumer consumer, bool alwaysCloseConnection) {
         var shouldCloseConnection = false;
         var clientIp = ((IPEndPoint) client.Client.RemoteEndPoint!).Address.ToString();
         
@@ -41,12 +41,12 @@ public static class HttpServer {
                 if (tokens.Length < 3) {
                     writer.WriteLine("HTTP/1.1 400 Bad request");
                     writer.WriteLine("Connection: close");
-                    shouldCloseConnection = true;
-                    continue;
+                    break;
                 }
 
                 var requestMethod = tokens[0];
-                (var path, var parameters) = ExtractPath(tokens[1]);
+                var pathWithParameters = Uri.UnescapeDataString(tokens[1]);
+                (var path, var parameters) = ExtractPath(pathWithParameters);
 
                 var headers = new Dictionary<string, string>();
                 string header;
@@ -54,7 +54,7 @@ public static class HttpServer {
                     AddHeaderToDictionary(headers, header);
                 }
                 
-                shouldCloseConnection = headers.TryGetValue("Connection", out var close) && close == "close";
+                shouldCloseConnection = alwaysCloseConnection || headers.TryGetValue("Connection", out var close) && close == "close";
                 using (var requestContents = new MemoryStream()) {
                     if (headers.TryGetValue("Content-Length", out var requestContentLength))
                         ReadRequestContents(requestContents, stream, requestContentLength);
@@ -79,7 +79,7 @@ public static class HttpServer {
         var paramsSplitter = fullPath.IndexOf('?');
         if (paramsSplitter < 0) return (fullPath, []);
 
-        var path = HttpUtility.HtmlDecode(fullPath[..paramsSplitter]);
+        var path = fullPath[..paramsSplitter];
         
         var keyValues = fullPath[(paramsSplitter + 1)..].Split('&').Select(kv => {
             var splitter = kv.IndexOf('=');
@@ -90,13 +90,12 @@ public static class HttpServer {
         
         return keyValues.Any(kv => kv.Length < 2) ? (path, []) :
                    (path, keyValues.ToDictionary(kv => kv[0], kv => kv[1]));
-
     }
 
     public static void SendResponse(RequestConsumer consumer, HttpRequest request, StreamWriter writer, Stream stream, bool shouldCloseConnection) {
         using (var buffer = new MemoryStream(1024)) {
             var response = new HttpResponse(buffer);
-            response.SetOk();
+            response.Status.SetOk();
 
             try {
                 consumer.Invoke(request, response);
@@ -104,22 +103,14 @@ public static class HttpServer {
                 response.Writer.Dispose();
             } catch (Exception e) {
                 Console.WriteLine($"Error while executing consumer: {e}");
-                response.SetServerError();
+                response.Status.SetServerError();
             }
 
-            response.Headers.TryAdd("Content-Type", response.DataType switch {
-                HttpDataType.Html => "text/html",
-                HttpDataType.Text => "text/plain",
-                HttpDataType.Json => "application/json",
-                HttpDataType.Jpeg => "image/jpeg",
-                HttpDataType.Png => "image/png",
-                _ => "text/plain"
-            });
-
+            response.Headers.TryAdd("Content-Type", response.DataType.Type);
             response.Headers.TryAdd("Content-Length", buffer.Length.ToString());
             response.Headers.TryAdd("Connection", shouldCloseConnection ? "close" : "keep-alive");
                     
-            writer.WriteLine($"HTTP/1.1 {response.StatusCode} {response.StatusCodeMessage}");
+            writer.WriteLine($"HTTP/1.1 {response.Status.Code} {response.Status.Message}");
             foreach (var responseHeader in response.Headers)
                 writer.WriteLine(responseHeader.Key + ": " + responseHeader.Value);
             writer.WriteLine();
